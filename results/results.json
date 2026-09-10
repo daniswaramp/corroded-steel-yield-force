@@ -1,0 +1,155 @@
+{
+  "cv": {
+    "MLR": {
+      "R2_mean": 0.9642,
+      "R2_std": 0.0089,
+      "RMSE_mean": 0.1805,
+      "RMSE_std": 0.0293
+    },
+    "RF": {
+      "R2_mean": 0.9856,
+      "R2_std": 0.0073,
+      "RMSE_mean": 0.1123,
+      "RMSE_std": 0.0308
+    },
+    "XGBoost": {
+      "R2_mean": 0.9898,
+      "R2_std": 0.0048,
+      "RMSE_mean": 0.0947,
+      "RMSE_std": 0.0245
+    },
+    "LightGBM": {
+      "R2_mean": 0.987,
+      "R2_std": 0.0066,
+      "RMSE_mean": 0.1067,
+      "RMSE_std": 0.031
+    },
+    "MLP": {
+      "R2_mean": 0.9711,
+      "R2_std": 0.0155,
+      "RMSE_mean": 0.1575,
+      "RMSE_std": 0.0442
+    },
+    "GPR": {
+      "R2_mean": 0.9893,
+      "R2_std": 0.0041,
+      "RMSE_mean": 0.0978,
+      "RMSE_std": 0.0205
+    }
+  },
+  "code_beta": 1.602,
+  "MLR": {
+    "R2": 0.9596,
+    "RMSE": 0.2118,
+    "MAE": 0.1448,
+    "MAPE": 15.52
+  },
+  "RF": {
+    "R2": 0.9778,
+    "RMSE": 0.1569,
+    "MAE": 0.0775,
+    "MAPE": 8.77
+  },
+  "XGBoost": {
+    "R2": 0.9814,
+    "RMSE": 0.1438,
+    "MAE": 0.0658,
+    "MAPE": 7.5
+  },
+  "LightGBM": {
+    "R2": 0.9794,
+    "RMSE": 0.1513,
+    "MAE": 0.0738,
+    "MAPE": 8.31
+  },
+  "MLP": {
+    "R2": 0.9528,
+    "RMSE": 0.2289,
+    "MAE": 0.1262,
+    "MAPE": 14.27
+  },
+  "GPR": {
+    "R2": 0.9814,
+    "RMSE": 0.1435,
+    "MAE": 0.0656,
+    "MAPE": 7.65,
+    "PICP95": 0.9593,
+    "MPIW95": 0.3408
+  },
+  "CodeLaw": {
+    "R2": 0.892,
+    "RMSE": 0.3462,
+    "MAE": 0.1785,
+    "MAPE": 22.11
+  },
+  "XGBoost_no_pit": {
+    "R2": 0.9802,
+    "RMSE": 0.1481,
+    "MAE": 0.0658,
+    "MAPE": 7.59
+  },
+  "XGBoost_grouped": {
+    "R2": 0.8204,
+    "RMSE": 0.3845,
+    "MAE": 0.3028,
+    "MAPE": 37.82
+  },
+  "shap_top": [
+    [
+      "Nominal Diameter",
+      0.6146
+    ],
+    [
+      "Mass Loss",
+      0.082
+    ],
+    [
+      "Bar_Grade",
+      0.0633
+    ],
+    [
+      "Bar_Type",
+      0.0387
+    ],
+    [
+      "Gauge Length",
+      0.0316
+    ],
+    [
+      "notch_severity",
+      0.0269
+    ],
+    [
+      "Cathode_Type",
+      0.0252
+    ],
+    [
+      "eta",
+      0.0226
+    ],
+    [
+      "Steel_Origin",
+      0.0194
+    ],
+    [
+      "Exposure Duration",
+      0.0189
+    ],
+    [
+      "Corrosion Penetration Depth",
+      0.0157
+    ],
+    [
+      "Cleaning_Method",
+      0.0112
+    ],
+    [
+      "area_unif",
+      0.009
+    ],
+    [
+      "Corroded Length",
+      0.0089
+    ]
+  ]
+}

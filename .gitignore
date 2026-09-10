@@ -1,0 +1,23 @@
+# environment and scratch, never part of the published project
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.jupyter_ystore.db
+.jupyter/
+
+# local working copies kept for safety, not for release
+_rewrite_backups/
+*_original_backup.ipynb
+*.bak
+*.bak-*
+
+# the DOCX report predates the prose rewrite and still carries the old voice
+Corroded_Steel_Yield_Force_Report.docx
+
+# OS noise
+Thumbs.db
+desktop.ini
+.DS_Store
