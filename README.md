@@ -64,15 +64,17 @@ Everything beyond Data.csv, which is `src/pipeline.py`, the notebook, the figure
 
 ## Figures
 
-![Measured against predicted yield force, held-out fifth](figures/parity.png)
+![Held-out parity for the code law and the two best models](figures/parity.png)
 
-Parity on the held-out fifth. The code law tracks the middle of the range and loses the ends,
-which is where an assessor needs it most.
+Held-out parity, three panels, which is the whole comparison in one image. XGBoost and the Gaussian
+process both reach R2 0.981 and the fitted code law reaches 0.892. The formula is good enough in the
+middle of the range and visibly worse at the ends, and the ends are where an assessor needs it.
 
 ![Calibration of the Gaussian process intervals](figures/calibration.png)
 
-Interval calibration for the Gaussian process. The 95 percent intervals cover 95.9 percent of the
-held-out rows, so the uncertainty is usable rather than nominal.
+Interval calibration for the Gaussian process. The 95 percent bands cover 95.9 percent of held-out
+rows, so the uncertainty band is usable rather than nominal, which is what lets the grouped-campaign
+result carry an honest range.
 
 ![Attribution of the boosted model](figures/shap_xgb.png)
 
@@ -80,11 +82,12 @@ Attribution of the boosted model, run on the held-out rows. The pit-depth family
 input the design formula cannot see, and deleting those five features costs only 0.0012 of R2 in a
 score averaged over every row.
 
-![Dependence of the prediction on penetration depth](figures/pd_depth.png)
+![The same mass loss with a deeper pit](figures/pd_depth.png)
 
-The same question asked directly: how the prediction moves with penetration depth while the other
-features stay where they were observed. Holding mass loss fixed and moving only depth changes the
-prediction by 0.142 in log units between no pit and 1.52 mm of pit.
+The second result drawn as three conditional curves, one per mass loss level of 2, 8 and 20 percent.
+Mass loss is held fixed inside each curve and only penetration depth moves, so the fall is what the
+formula is missing. Between no pit and 1.52 mm the prediction drops by 0.142 in log units, and the
+drop starts earlier at low mass loss, where the pit is a larger share of what is left.
 
 ## Equations
 
