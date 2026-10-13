@@ -13,6 +13,32 @@ Four results came out of it:
 - Deleting the five pit-depth features costs 0.0012 of R2, which sizes what pitting knowledge is worth in a score averaged over every row. Holding mass loss fixed and moving only depth drops the prediction by 0.142 in log units between no pit and 1.52 mm of pit.
 - Holding whole campaigns out drops R2 from 0.981 to 0.820 and multiplies MAPE by five, so 0.820 is the number to quote outside the notebook.
 
+## The route
+
+```mermaid
+flowchart TD
+    A["data/Data.csv: 1,349 tests, 21 columns, CC-BY-4.0"] --> B["loader: keep None and N/A as real categories"]
+    B --> C["16 features: 8 categorical, 8 numerical, target ln Fy"]
+    C --> D["code law fitted by least squares: Fy = Fy0 (1 - beta eta)"]
+    C --> E["tree models under monotone constraints"]
+    C --> F["Gaussian process with 95 percent intervals"]
+    C --> G["GroupKFold: whole campaigns held out"]
+    D --> H["residuals binned by pit depth"]
+    E --> I["SHAP attribution and dependence"]
+    F --> J["calibration and interval coverage"]
+    H --> K{"where does the design formula fail?"}
+    I --> K
+    J --> K
+    G --> K
+    K --> L["quote 0.82 grouped rather than 0.98 in-sample"]
+```
+
+Three routes to the same question, which is whether the straight-line design formula in mass loss
+is describing the damage or hiding it. Fitting the formula and watching its residuals answers it
+directly. Modelling the same data without the formula and asking SHAP what the pit-depth family is
+worth answers it by subtraction. Holding whole campaigns out answers how much of the result
+survives a new source.
+
 ## Data and attribution
 
 The database belongs to Benjamin Matthews, Alessandro Palermo and Allan Scott: *Monotonic Tensile Testing of Corroded Reinforcing Steel Bars Database*, Zenodo, 2023, doi [10.5281/zenodo.8035720](https://doi.org/10.5281/zenodo.8035720), released under CC-BY-4.0. The copy used here, and the model comparison it shipped with, comes from [bma114/corroded-steel-machine-learning](https://github.com/bma114/corroded-steel-machine-learning). The published article is Matthews, Palermo, Logan and Scott, *Construction and Building Materials* 438, 2024, doi [10.1016/j.conbuildmat.2024.137023](https://doi.org/10.1016/j.conbuildmat.2024.137023).
@@ -35,6 +61,76 @@ Everything beyond Data.csv, which is `src/pipeline.py`, the notebook, the figure
 | XGB, grouped by campaign (unseen) | 0.820 | 37.8% |
 
 10-fold CV ranking agrees: XGB 0.990, GPR 0.989, LightGBM 0.987, RF 0.986, MLP 0.971, MLR 0.964.
+
+## Figures
+
+![Measured against predicted yield force, held-out fifth](figures/parity.png)
+
+Parity on the held-out fifth. The code law tracks the middle of the range and loses the ends,
+which is where an assessor needs it most.
+
+![Calibration of the Gaussian process intervals](figures/calibration.png)
+
+Interval calibration for the Gaussian process. The 95 percent intervals cover 95.9 percent of the
+held-out rows, so the uncertainty is usable rather than nominal.
+
+![Attribution of the boosted model](figures/shap_xgb.png)
+
+Attribution of the boosted model, run on the held-out rows. The pit-depth family is the part of the
+input the design formula cannot see, and deleting those five features costs only 0.0012 of R2 in a
+score averaged over every row.
+
+![Dependence of the prediction on penetration depth](figures/pd_depth.png)
+
+The same question asked directly: how the prediction moves with penetration depth while the other
+features stay where they were observed. Holding mass loss fixed and moving only depth changes the
+prediction by 0.142 in log units between no pit and 1.52 mm of pit.
+
+## Equations
+
+The design formula as an assessor writes it, with the degradation factor fitted rather than
+assumed. The target is the natural log of the yield force, so the fit is linear in log space:
+
+$$F_y = F_{y0}\left(1 - \beta\,\eta\right), \qquad \ln F_y = \ln F_{y0} + \ln\left(1 - \beta\,\eta\right)$$
+
+where $\eta$ is the mass-loss ratio and the fitted $\beta$ is 1.602 against the 1.0 that reading
+the formula as pure area loss would imply.
+
+Scoring, on the held-out fifth and again under campaign grouping:
+
+$$R^2 = 1 - \frac{\sum_i (y_i - \hat{y}_i)^2}{\sum_i (y_i - \bar{y})^2}, \qquad
+\mathrm{MAPE} = \frac{100}{n}\sum_i \left|\frac{y_i - \hat{y}_i}{y_i}\right|$$
+
+Interval coverage, the share of held-out rows inside the predicted 95 percent band:
+
+$$\mathrm{PICP} = \frac{1}{n}\sum_i \mathbb{1}\left[\,l_i \leq y_i \leq u_i\,\right]$$
+
+Attribution, which is where the second result comes from. SHAP values are Shapley values of the
+model treated as a cooperative game, and they add up to the prediction exactly:
+
+$$\phi_j = \sum_{S \subseteq N \setminus \{j\}} \frac{|S|!\,(|N| - |S| - 1)!}{|N|!}
+\left[f(S \cup \{j\}) - f(S)\right], \qquad f(x) = \mathbb{E}[f(X)] + \sum_j \phi_j(x)$$
+
+The tree models carry monotone constraints, so the fitted response cannot bend back on itself in
+directions the metallurgy fixes:
+
+$$\frac{\partial f}{\partial x_j} \geq 0 \quad \text{for the features where increasing the value
+can only increase the yield force}$$
+
+## Methods and tools
+
+- **numpy and pandas** for the loader and the feature assembly. The loader treats `None` and `N/A`
+  as real categories, because pandas reads them as missing and that silently drops rows.
+- **scikit-learn** for the Gaussian process, the random forest, the multilayer perceptron and the
+  linear baseline, and for `GroupKFold`, which keeps whole campaigns on one side of the split.
+- **XGBoost and LightGBM** for the boosted trees, with monotone constraints on the features whose
+  direction is known, and fixed seeds so the table is reproducible.
+- **SHAP** for the attribution and the dependence plots, run on the held-out rows rather than the
+  training rows.
+- **matplotlib** for the figures, all written to `figures/` by `src/pipeline.py`.
+- **The pipeline runs headless** (`python src/pipeline.py`, about five minutes) and writes
+  `results/results.json`, which is what the notebook quotes, so the numbers in this README can be
+  regenerated rather than trusted.
 
 ### Why a re-run may differ in the last digit
 
