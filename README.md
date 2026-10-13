@@ -96,17 +96,28 @@ assumed. The target is the natural log of the yield force, so the fit is linear 
 
 $$F_y = F_{y0}\left(1 - \beta\,\eta\right), \qquad \ln F_y = \ln F_{y0} + \ln\left(1 - \beta\,\eta\right)$$
 
-where $\eta$ is the mass-loss ratio and the fitted $\beta$ is 1.602 against the 1.0 that reading
-the formula as pure area loss would imply.
+- $F_y$ is the residual yield force of the corroded bar in kN, the quantity being predicted.
+- $F_{y0}$ is the yield force of the same bar uncorroded, which is the intercept the fit returns.
+- $\eta$ is the mass-loss ratio as a fraction, not a percentage: 0.1 means ten percent of the mass is gone.
+- $\beta$ is the degradation factor, the only free parameter once $F_{y0}$ is set, and the fit returns 1.602 where reading the formula as pure area loss would put it at 1.0.
+- The logarithms are natural, and taking them makes the fit linear in the intercept, which is what lets a single least-squares pass do the work.
 
 Scoring, on the held-out fifth and again under campaign grouping:
 
 $$R^2 = 1 - \frac{\sum_i (y_i - \hat{y}_i)^2}{\sum_i (y_i - \bar{y})^2}, \qquad
 \mathrm{MAPE} = \frac{100}{n}\sum_i \left|\frac{y_i - \hat{y}_i}{y_i}\right|$$
 
+- $y_i$ is a measured $\ln F_y$ and $\hat{y}_i$ its prediction, $\bar{y}$ the mean of the measurements, and $n$ the number of held-out bars.
+- $R^2$ is the share of the variance accounted for, and MAPE the mean absolute percentage error, quoted in kN terms because the percent is taken on the force after exponentiating rather than on the log.
+- Both are reported on the held-out fifth and again with whole campaigns held out, because a model can score well on unseen bars from campaigns it has already seen.
+
 Interval coverage, the share of held-out rows inside the predicted 95 percent band:
 
 $$\mathrm{PICP} = \frac{1}{n}\sum_i \mathbb{1}\left[\,l_i \leq y_i \leq u_i\,\right]$$
+
+- $l_i$ and $u_i$ are the lower and upper bounds the Gaussian process predicts for bar $i$, and $y_i$ the measured value.
+- $\mathbb{1}[\cdot]$ is one when the measurement falls inside the band and zero when it does not, so the sum is simply the share of held-out bars covered.
+- A 95 percent band should cover about 95 percent of them, and this one covers 95.9, which is what makes the interval worth quoting.
 
 Attribution, which is where the second result comes from. SHAP values are Shapley values of the
 model treated as a cooperative game, and they add up to the prediction exactly:
@@ -114,11 +125,20 @@ model treated as a cooperative game, and they add up to the prediction exactly:
 $$\phi_j = \sum_{S \subseteq N \setminus \{j\}} \frac{|S|!\,(|N| - |S| - 1)!}{|N|!}
 \left[f(S \cup \{j\}) - f(S)\right], \qquad f(x) = \mathbb{E}[f(X)] + \sum_j \phi_j(x)$$
 
+- $N$ is the set of features and $S$ a subset of them not containing feature $j$, with $|S|$ its size.
+- $f(S)$ is the model's output when only the features in $S$ are supplied and the rest are averaged over, so the difference in brackets is what adding feature $j$ to that subset changes.
+- The weights in front average that change over every order in which the features could be added, which is the Shapley construction.
+- $\mathbb{E}[f(X)]$ is the average prediction over the data, and the second expression says the attributions add back up to the prediction for that bar, with no residual.
+
 The tree models carry monotone constraints, so the fitted response cannot bend back on itself in
 directions the metallurgy fixes:
 
 $$\frac{\partial f}{\partial x_j} \geq 0 \quad \text{for the features where increasing the value
 can only increase the yield force}$$
+
+- $f$ is the fitted model and $x_j$ one input feature, so the derivative is how much the prediction moves when that feature moves.
+- The constraint holds the sign on features whose direction the metallurgy fixes, such as mass loss and penetration depth, both of which can only take strength away.
+- It stops the tree ensemble from producing a response that dips and recovers inside the range of the data, which would be a curve no physical mechanism could justify.
 
 ## Methods and tools
 
