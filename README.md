@@ -1,4 +1,4 @@
-# Corroded steel residual yield force: separating pitting-notch effects from uniform mass loss
+# Corroded steel bar yield force analysis: pitting-notch effects against uniform mass loss
 
 Predicting the residual yield force of corroded steel bars from 1,349 tensile tests across 26 published
 campaigns, with the pitting notch effect separated from uniform thinning three ways.
